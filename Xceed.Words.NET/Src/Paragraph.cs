@@ -3160,9 +3160,6 @@ namespace Xceed.Words.NET
 
     public Paragraph PercentageScale( int percentageScale )
     {
-      if( !( new int?[] { 200, 150, 100, 90, 80, 66, 50, 33 } ).Contains( percentageScale ) )
-        throw new ArgumentOutOfRangeException( "PercentageScale", "Value must be one of the following: 200, 150, 100, 90, 80, 66, 50 or 33" );
-
       ApplyTextFormattingProperty( XName.Get( "w", DocX.w.NamespaceName ), string.Empty, new XAttribute( XName.Get( "val", DocX.w.NamespaceName ), percentageScale ) );
 
       return this;

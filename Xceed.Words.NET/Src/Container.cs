@@ -326,7 +326,7 @@ namespace Xceed.Words.NET
       }
 
       // ReplaceText in Headers of the document.
-      var headerList = new List<Header>() { this.Document.Headers.First, this.Document.Headers.Even, this.Document.Headers.Odd };
+      var headerList = this.Document.Headers.All;
       foreach( Header h in headerList )
       {
         if( h != null )
@@ -345,7 +345,7 @@ namespace Xceed.Words.NET
       }
 
       // ReplaceText in Footers of the document.
-      var footerList = new List<Footer> { this.Document.Footers.First, this.Document.Footers.Even, this.Document.Footers.Odd };
+      var footerList = this.Document.Footers.All;
       foreach( Footer f in footerList )
       {
         if( f != null )
@@ -388,15 +388,9 @@ namespace Xceed.Words.NET
       }
 
       // Replace text in headers and footers of the Document.
-      var headersFootersList = new List<IParagraphContainer>()
-      {
-        this.Document.Headers.First,
-        this.Document.Headers.Even,
-        this.Document.Headers.Odd,
-        this.Document.Footers.First,
-        this.Document.Footers.Even,
-        this.Document.Footers.Odd,
-      };
+      var headersFootersList = new List<IParagraphContainer>();
+      headersFootersList.AddRange(this.Document.Headers.All);
+      headersFootersList.AddRange(this.Document.Footers.All);
 
       foreach( var hf in headersFootersList )
       {
@@ -421,7 +415,7 @@ namespace Xceed.Words.NET
         throw new ArgumentException( "bookmark cannot be null or empty", "bookmarkName" );
 
       var headerCollection = Document.Headers;
-      var headers = new List<Header> { headerCollection.First, headerCollection.Even, headerCollection.Odd };
+      var headers = headerCollection.All;
       foreach( var header in headers.Where( x => x != null ) )
         foreach( var paragraph in header.Paragraphs )
           paragraph.InsertAtBookmark( toInsert, bookmarkName );
@@ -430,7 +424,7 @@ namespace Xceed.Words.NET
         paragraph.InsertAtBookmark( toInsert, bookmarkName );
 
       var footerCollection = Document.Footers;
-      var footers = new List<Footer> { footerCollection.First, footerCollection.Even, footerCollection.Odd };
+      var footers = footerCollection.All;
       foreach( var footer in footers.Where( x => x != null ) )
         foreach( var paragraph in footer.Paragraphs )
           paragraph.InsertAtBookmark( toInsert, bookmarkName );
@@ -825,8 +819,8 @@ namespace Xceed.Words.NET
 
     public string[] ValidateBookmarks( params string[] bookmarkNames )
     {
-      var headers = new[] { Document.Headers.First, Document.Headers.Even, Document.Headers.Odd }.Where( h => h != null ).ToList();
-      var footers = new[] { Document.Footers.First, Document.Footers.Even, Document.Footers.Odd }.Where( f => f != null ).ToList();
+      var headers = Document.Headers.All.Where( h => h != null ).ToList();
+      var footers = Document.Footers.All.Where( f => f != null ).ToList();
 
       var result = new List<string>();
 

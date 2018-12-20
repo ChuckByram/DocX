@@ -12,6 +12,8 @@
 
   ***********************************************************************************/
 
+using System.Collections.Generic;
+
 namespace Xceed.Words.NET
 {
   public class Headers
@@ -36,11 +38,17 @@ namespace Xceed.Words.NET
       set;
     }
 
-    #endregion
+    public List<Header> All
+    {
+        get;
+        set;
+    }
 
-    #region Constructors
+        #endregion
 
-    internal Headers()
+        #region Constructors
+
+        internal Headers()
     {
     }
 

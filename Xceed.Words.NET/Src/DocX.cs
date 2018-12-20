@@ -1873,6 +1873,7 @@ namespace Xceed.Words.NET
       _headers.Odd = Document.GetHeaderByType( "default" );
       _headers.Even = Document.GetHeaderByType( "even" );
       _headers.First = Document.GetHeaderByType( "first" );
+      _headers.All = Document.GetAllHeaders();
     }
 
     /// <summary>
@@ -1916,6 +1917,7 @@ namespace Xceed.Words.NET
       _footers.Odd = Document.GetFooterByType( "default" );
       _footers.Even = Document.GetFooterByType( "even" );
       _footers.First = Document.GetFooterByType( "first" );
+      _footers.All = Document.GetAllFooters();
     }
 
     /// <summary>
@@ -1964,22 +1966,20 @@ namespace Xceed.Words.NET
 
       if( sectPr != null )
       {
-        var evenHeaderRef =
-        (
-            from e in _mainDoc.Descendants( w + "headerReference" )
-            let type = e.Attribute( w + "type" )
-            where type != null && type.Value.Equals( "even", StringComparison.CurrentCultureIgnoreCase )
-            select e.Attribute( r + "id" ).Value
-         ).LastOrDefault();
+        var idList = (
+          from e in _mainDoc.Descendants(XName.Get("body", w.NamespaceName)).Descendants()
+          where (e.Name.LocalName == "headerReference")
+          select e.Attribute(r + "id").Value
+        ).ToList();
 
-        if( evenHeaderRef != null )
+
+        for (var i = 0; i < idList.Count; i++)
         {
-          var even = headers.Even.Xml;
-
+          var xml = _headers.All[i].Xml;
           var target = PackUriHelper.ResolvePartUri
           (
               this.PackagePart.Uri,
-              this.PackagePart.GetRelationship( evenHeaderRef ).TargetUri
+              this.PackagePart.GetRelationship( idList[i] ).TargetUri
           );
 
           using( TextWriter tw = new StreamWriter( new PackagePartStream( _package.GetPart( target ).GetStream( FileMode.Create, FileAccess.Write ) ) ) )
@@ -1987,148 +1987,33 @@ namespace Xceed.Words.NET
             new XDocument
             (
                 new XDeclaration( "1.0", "UTF-8", "yes" ),
-                even
+                xml
             ).Save( tw, SaveOptions.None );
           }
         }
 
-        var oddHeaderRef =
-        (
-            from e in _mainDoc.Descendants( w + "headerReference" )
-            let type = e.Attribute( w + "type" )
-            where type != null && type.Value.Equals( "default", StringComparison.CurrentCultureIgnoreCase )
-            select e.Attribute( r + "id" ).Value
-         ).LastOrDefault();
+        idList = (
+          from e in _mainDoc.Descendants(XName.Get("body", w.NamespaceName)).Descendants()
+          where (e.Name.LocalName == "footerReference")
+          select e.Attribute(r + "id").Value
+        ).ToList();
 
-        if( oddHeaderRef != null )
+
+        for (var i = 0; i < idList.Count; i++)
         {
-          var odd = headers.Odd.Xml;
-
+          var xml = _footers.All[i].Xml;
           var target = PackUriHelper.ResolvePartUri
           (
               this.PackagePart.Uri,
-              this.PackagePart.GetRelationship( oddHeaderRef ).TargetUri
+              this.PackagePart.GetRelationship( idList[i] ).TargetUri
           );
 
-          // Save header1
           using( TextWriter tw = new StreamWriter( new PackagePartStream( _package.GetPart( target ).GetStream( FileMode.Create, FileAccess.Write ) ) ) )
           {
             new XDocument
             (
                 new XDeclaration( "1.0", "UTF-8", "yes" ),
-                odd
-            ).Save( tw, SaveOptions.None );
-          }
-        }
-
-        var firstHeaderRef =
-        (
-            from e in _mainDoc.Descendants( w + "headerReference" )
-            let type = e.Attribute( w + "type" )
-            where type != null && type.Value.Equals( "first", StringComparison.CurrentCultureIgnoreCase )
-            select e.Attribute( r + "id" ).Value
-         ).LastOrDefault();
-
-        if( firstHeaderRef != null )
-        {
-          var first = headers.First.Xml;
-          var target = PackUriHelper.ResolvePartUri
-          (
-              this.PackagePart.Uri,
-              this.PackagePart.GetRelationship( firstHeaderRef ).TargetUri
-          );
-
-          // Save header3
-          using( TextWriter tw = new StreamWriter( new PackagePartStream( _package.GetPart( target ).GetStream( FileMode.Create, FileAccess.Write ) ) ) )
-          {
-            new XDocument
-            (
-                new XDeclaration( "1.0", "UTF-8", "yes" ),
-                first
-            ).Save( tw, SaveOptions.None );
-          }
-        }
-
-        var oddFooterRef =
-        (
-            from e in _mainDoc.Descendants( w + "footerReference" )
-            let type = e.Attribute( w + "type" )
-            where type != null && type.Value.Equals( "default", StringComparison.CurrentCultureIgnoreCase )
-            select e.Attribute( r + "id" ).Value
-         ).LastOrDefault();
-
-        if( oddFooterRef != null )
-        {
-          var odd = _footers.Odd.Xml;
-          var target = PackUriHelper.ResolvePartUri
-          (
-              this.PackagePart.Uri,
-              this.PackagePart.GetRelationship( oddFooterRef ).TargetUri
-          );
-
-          // Save header1
-          using( TextWriter tw = new StreamWriter( new PackagePartStream( _package.GetPart( target ).GetStream( FileMode.Create, FileAccess.Write ) ) ) )
-          {
-            new XDocument
-            (
-                new XDeclaration( "1.0", "UTF-8", "yes" ),
-                odd
-            ).Save( tw, SaveOptions.None );
-          }
-        }
-
-        var evenFooterRef =
-        (
-            from e in _mainDoc.Descendants( w + "footerReference" )
-            let type = e.Attribute( w + "type" )
-            where type != null && type.Value.Equals( "even", StringComparison.CurrentCultureIgnoreCase )
-            select e.Attribute( r + "id" ).Value
-         ).LastOrDefault();
-
-        if( evenFooterRef != null )
-        {
-          var even = _footers.Even.Xml;
-          var target = PackUriHelper.ResolvePartUri
-          (
-              this.PackagePart.Uri,
-              this.PackagePart.GetRelationship( evenFooterRef ).TargetUri
-          );
-
-          // Save header2
-          using( TextWriter tw = new StreamWriter( new PackagePartStream( _package.GetPart( target ).GetStream( FileMode.Create, FileAccess.Write ) ) ) )
-          {
-            new XDocument
-            (
-                new XDeclaration( "1.0", "UTF-8", "yes" ),
-                even
-            ).Save( tw, SaveOptions.None );
-          }
-        }
-
-        var firstFooterRef =
-        (
-             from e in _mainDoc.Descendants( w + "footerReference" )
-             let type = e.Attribute( w + "type" )
-             where type != null && type.Value.Equals( "first", StringComparison.CurrentCultureIgnoreCase )
-             select e.Attribute( r + "id" ).Value
-        ).LastOrDefault();
-
-        if( firstFooterRef != null )
-        {
-          var first = _footers.First.Xml;
-          var target = PackUriHelper.ResolvePartUri
-          (
-              this.PackagePart.Uri,
-              this.PackagePart.GetRelationship( firstFooterRef ).TargetUri
-          );
-
-          // Save header3
-          using( TextWriter tw = new StreamWriter( new PackagePartStream( _package.GetPart( target ).GetStream( FileMode.Create, FileAccess.Write ) ) ) )
-          {
-            new XDocument
-            (
-                new XDeclaration( "1.0", "UTF-8", "yes" ),
-                first
+                xml
             ).Save( tw, SaveOptions.None );
           }
         }
@@ -3721,6 +3606,16 @@ namespace Xceed.Words.NET
       return ( Footer )GetHeaderOrFooterByType( type, false );
     }
 
+    private List<Header> GetAllHeaders()
+    {
+      return ( List<Header> )GetAllHeadersOrFooters( true );
+    }
+
+    private List<Footer> GetAllFooters()
+    {
+      return ( List<Footer> )GetAllHeadersOrFooters( false );
+    }
+
     private object GetHeaderOrFooterByType( string type, bool isHeader )
     {
       // Switch which handles either case Header\Footer, this just cuts down on code duplication.
@@ -3769,6 +3664,62 @@ namespace Xceed.Words.NET
 
       // If we got this far something went wrong.
       return null;
+    }
+
+    private object GetAllHeadersOrFooters( bool isHeader )
+    {
+      // Switch which handles either case Header\Footer, this just cuts down on code duplication.
+      string reference = "footerReference";
+      if( isHeader )
+        reference = "headerReference";
+
+      var list = new List<Container>();
+
+      var idList = (
+		from e in _mainDoc.Descendants(XName.Get("body", w.NamespaceName)).Descendants()
+		where (e.Name.LocalName == reference)
+		select e.Attribute(r + "id").Value
+      ).ToList();
+
+      foreach (var Id in idList)
+      {
+        // Get the Xml file for this Header or Footer.
+        var partUri = this.PackagePart.GetRelationship( Id ).TargetUri;
+
+        // Weird problem with PackaePart API.
+        if( !partUri.OriginalString.StartsWith( "/word/" ) )
+          partUri = new Uri( "/word/" + partUri.OriginalString, UriKind.Relative );
+
+        // Get the Part and open a stream to get the Xml file.
+        var part = _package.GetPart( partUri );
+
+        using( TextReader tr = new StreamReader( part.GetStream() ) )
+        {
+          var doc = XDocument.Load( tr );
+
+          // Header and Footer extend Container.
+          Container c;
+          if( isHeader )
+          {
+            c = new Header( this, doc.Element( w + "hdr" ), part );
+          }
+          else
+          {
+            c = new Footer( this, doc.Element( w + "ftr" ), part );
+          }
+
+          list.Add(c);
+        }
+      }
+
+      if (isHeader)
+      { 
+        return list.Select(c => (Header)c).ToList();
+      }
+      else
+      { 
+        return list.Select(c => (Footer)c).ToList();
+      }
     }
 
     private void merge_images( PackagePart remote_pp, DocX remote_document, XDocument remote_mainDoc, String contentType )
@@ -4319,14 +4270,20 @@ namespace Xceed.Words.NET
     private static void PopulateDocument( DocX document, Package package )
     {
       var headers = new Headers();
+      // These methods only return the LAST header for a type. Chuck.
       headers.Odd = document.GetHeaderByType( "default" );
       headers.Even = document.GetHeaderByType( "even" );
       headers.First = document.GetHeaderByType( "first" );
+      // Added method to get all headers (for searching). Chuck.
+      headers.All = document.GetAllHeaders();
 
       var footers = new Footers();
+      // These methods only return the LAST footer for a type. Chuck.
       footers.Odd = document.GetFooterByType( "default" );
       footers.Even = document.GetFooterByType( "even" );
       footers.First = document.GetFooterByType( "first" );
+      // Added method to get all footers (for searching). Chuck.
+      footers.All = document.GetAllFooters();
 
       //// Get the sectPr for this document.
       //XElement sectPr = document.mainDoc.Descendants(XName.Get("sectPr", DocX.w.NamespaceName)).Single();

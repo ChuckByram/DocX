@@ -12,6 +12,8 @@
 
   ***********************************************************************************/
 
+using System.Collections.Generic;
+
 namespace Xceed.Words.NET
 {
   public class Footers
@@ -34,6 +36,12 @@ namespace Xceed.Words.NET
     {
       get;
       set;
+    }
+
+    public List<Footer> All
+    {
+        get;
+        set;
     }
 
     #endregion
